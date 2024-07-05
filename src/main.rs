@@ -11,8 +11,24 @@ use crate::ray::Ray;
 
 fn ray_color(ray: &Ray) -> Color
 {
+    if sphere_hit(Vec3::new(0.0,0.0,-1.0), 0.5, ray)
+    {
+        return Color::new(1.0, 0.0,0.0);
+    }
+
     let alpha = 0.5 * (ray.direction().normalize().y() + 1.0);
     (1.0 - alpha) * Color::new(1.0,1.0,1.0) + alpha * Color::new(0.5, 0.7, 1.0)
+}
+
+fn sphere_hit(center: Vec3, radius: f32, ray: &Ray) -> bool
+{
+    let oc: Vec3 = center - ray.origin();
+
+    let a = ray.direction().dot(ray.direction());
+    let b = -2.0 * ray.direction().dot(oc);
+    let c = oc.dot(oc) - radius * radius;
+
+    b * b - 4.0 * a * c >= 0.0
 }
 
 fn main()
