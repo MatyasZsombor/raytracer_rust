@@ -13,6 +13,11 @@ impl HitRecord {
     {
         HitRecord {point, normal, t}
     }
+
+    pub fn set_normal(& mut self, ray: &Ray, normal: Vec3)
+    {
+        self.normal = if ray.direction().dot(normal) < 0.0 { normal } else { -normal };
+    }
 }
 
 trait Hittable
@@ -61,6 +66,8 @@ impl Hittable for Sphere {
         }
 
         let p = ray.at(root);
-        Some(HitRecord::new(root, p, (p - self.center) / self.radius))
+        let mut hit = HitRecord::new(root, p, (p - self.center) / self.radius);
+        hit.set_normal(ray, (hit.point - self.center) / self.radius);
+        Some(hit)
     }
 }
