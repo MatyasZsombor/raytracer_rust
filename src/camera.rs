@@ -87,7 +87,8 @@ impl Camera
         {
 
             Some(hit_record) => {
-                0.5 * (hit_record.normal + Color::new(1.0,1.0,1.0))
+                let direction  = Vec3::random_on_hemisphere(&hit_record.normal);
+                0.5 * Self::ray_color(&Ray::new(hit_record.point, direction), world)
             }
             None => {
                 let alpha = 0.5 * (ray.direction().normalize().y() + 1.0);

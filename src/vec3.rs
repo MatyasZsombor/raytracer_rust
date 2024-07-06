@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use std::ops::*;
+use rand::Rng;
 
 #[derive(Clone, Copy)]
 pub struct Vec3
@@ -59,6 +60,26 @@ impl Vec3
             self.e[3] * v.e[0] - self.e[0] * v.e[3],
             self.e[0] * v.e[1] - self.e[1] * v.e[0],
         )
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3
+    {
+        let mut rng = rand::thread_rng();
+
+        let mut random_vector = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
+        while random_vector.length_squared() > 1.0 {
+            random_vector = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
+        }
+       random_vector = random_vector.normalize();
+
+        if random_vector.dot(*normal) > 0.0
+        {
+            random_vector
+        }
+        else
+        {
+            -random_vector
+        }
     }
 }
 
