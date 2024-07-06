@@ -1,5 +1,7 @@
 use std::fs;
 use colored::Colorize;
+use rand::Rng;
+
 use crate::color::{Color, write_color};
 use crate::hittable::{Hittable, HittableList};
 use crate::ray::Ray;
@@ -8,6 +10,8 @@ pub struct Camera
 {
     pub aspect_ratio: f32,
     pub image_width: i32,
+    pub samples_per_pixel: i32,
+    pixel_samples_scale: f32,
     image_height: i32,
     center: Vec3,
     pixel00: Vec3,
@@ -17,7 +21,7 @@ pub struct Camera
 
 impl Camera
 {
-    pub fn new(aspect_ratio: f32, image_width: i32, center: Vec3) -> Self
+    pub fn new(aspect_ratio: f32, image_width: i32, center: Vec3, samples_per_pixel: i32) -> Self
     {
         let mut image_height = (image_width as f32 / aspect_ratio) as i32;
         image_height = if image_height < 1 { 1 } else { image_height} ;
@@ -36,9 +40,12 @@ impl Camera
         let viewport00 = camera_pos - Vec3::new(0.0,0.0,focal) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel00 = viewport00 + 0.5 * (delta_u + delta_v);
 
+
         Camera {
             aspect_ratio,
             image_width,
+            samples_per_pixel,
+            pixel_samples_scale: 1.0 / samples_per_pixel as f32,
             image_height,
             center,
             pixel00,
@@ -47,7 +54,7 @@ impl Camera
         }
     }
 
-    pub fn render(&self, world: &HittableList)
+    pub fn render(&self, world: &HittableList, disk_sampling: bool)
     {
         let mut string: String = "".to_string();
 
@@ -58,11 +65,14 @@ impl Camera
 
             for i in 0..self.image_width
             {
-                let pixel_center = self.pixel00 + (i as f32 * self.delta_u) + (j as f32 * self.delta_v);
-                let ray = Ray::new(self.center, pixel_center - self.center);
+                let mut pixel_color = Color::new_zero();
 
-                let pixel_color = Camera::ray_color(&ray, world);
-                string.push_str(&write_color(&pixel_color));
+                for _ in 0..self.samples_per_pixel
+                {
+                    let ray = self.get_ray(i, j, disk_sampling);
+                    pixel_color = pixel_color + Camera::ray_color(&ray, world);
+                }
+                string.push_str(&write_color(&(pixel_color * self.pixel_samples_scale)));
             }
 
             print!("\x1B[2J\x1B[1;1H");
@@ -84,5 +94,34 @@ impl Camera
                 (1.0 - alpha) * Color::new(1.0, 1.0, 1.0) + alpha * Color::new(0.5, 0.7, 1.0)
             }
         }
+    }
+
+    fn get_ray(&self, i : i32, j: i32, disk_sampling: bool) -> Ray
+    {
+        let offset = if disk_sampling
+        { Camera::sample_disk(1.0) }
+        else { Camera::sample_square() };
+
+        let pixel_sample = self.pixel00
+            + ((i as f32 + offset.x()) * self.delta_u)
+            + ((j as f32 + offset.y()) * self.delta_v);
+
+        return Ray::new(self.center, pixel_sample - self.center);
+    }
+
+    fn sample_square() -> Vec3
+    {
+        let mut rng = rand::thread_rng();
+        Vec3::new(rng.gen::<f32>() - 0.5, rng.gen::<f32>() - 0.5,0.0)
+    }
+
+    fn sample_disk(radius: f32) -> Vec3
+    {
+        let mut rng = rand::thread_rng();
+        let mut p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        while p.length_squared() >= 1.0 {
+            p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        }
+        p * radius
     }
 }
