@@ -1,7 +1,8 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
-struct HitRecord
+#[derive(Copy, Clone)]
+pub struct HitRecord
 {
     pub point: Vec3,
     pub normal: Vec3,
@@ -20,12 +21,12 @@ impl HitRecord {
     }
 }
 
-trait Hittable
+pub trait Hittable
 {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }
 
-struct Sphere
+pub struct Sphere
 {
     center: Vec3,
     radius: f32
@@ -54,7 +55,7 @@ impl Hittable for Sphere {
         }
 
         let sqrt = discriminant.sqrt();
-        let mut root = h - sqrt / a;
+        let mut root = (h - sqrt) / a;
 
         if root <= t_min || t_max <= root
         {
@@ -69,5 +70,35 @@ impl Hittable for Sphere {
         let mut hit = HitRecord::new(root, p, (p - self.center) / self.radius);
         hit.set_normal(ray, (hit.point - self.center) / self.radius);
         Some(hit)
+    }
+}
+
+pub struct HittableList
+{
+    pub objects: Vec<Box<dyn Hittable>>,
+}
+
+impl HittableList {
+    pub fn new(objects: Vec<Box<dyn Hittable>>) -> Self
+    {
+        HittableList {objects}
+    }
+}
+
+impl Hittable for HittableList {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        let mut closest = t_max;
+        let mut res = None;
+
+        for h in &self.objects
+        {
+            if let Some(hit_record) = h.hit(ray, t_min, closest)
+            {
+                closest = hit_record.t;
+                res = Some(hit_record);
+            }
+        }
+
+        res
     }
 }
