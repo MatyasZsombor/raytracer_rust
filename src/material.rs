@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
@@ -8,7 +7,7 @@ use crate::vec3::Vec3;
 pub enum Material
 {
     Lambertian {attenuation: Vec3 },
-    Metal {attenuation: Vec3 }
+    Metal {attenuation: Vec3, fuzz: f32 }
 }
 
 fn reflect(v: &Vec3, n: &Vec3) -> Vec3
@@ -31,8 +30,12 @@ impl Material {
 
                 (Ray::new(record.point, scatter_direction), *attenuation, true)
             }
-            Material::Metal {attenuation} => {
-                (Ray::new(record.point, reflect(&ray.direction(), &record.normal)), *attenuation, true)
+            Material::Metal {attenuation, fuzz} => {
+                let mut reflected = reflect(&ray.direction(), &record.normal);
+                reflected = reflected.normalize() + (*fuzz * Vec3::random_unit_vector());
+                let scattered = Ray::new(record.point, reflected);
+
+                (scattered, *attenuation, scattered.direction().dot(record.normal) > 0.0)
             }
         }
     }
