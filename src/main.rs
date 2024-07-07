@@ -10,15 +10,15 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::vec3::Vec3;
 use crate::hittable::*;
-use crate::material::Material::{Lambertian, Metal};
+use crate::material::Material::{Dielectric, Lambertian, Metal};
 
 fn main()
 {
-    let camera: Camera = Camera::new(16.0 / 9.0, 800, Vec3::new_zero(), 100, 50);
+    let camera: Camera = Camera::new(16.0 / 9.0, 800, Vec3::new_zero(), 10, 50);
 
     let material_ground = Lambertian {attenuation: Color::new(0.8,0.8,0.0)};
     let material_center = Lambertian {attenuation: Color::new(0.1,0.2,0.5)};
-    let material_left = Metal {attenuation: Color::new(0.8, 0.8, 0.8), fuzz: 0.3};
+    let material_left = Dielectric {refraction_index : 1.50};
     let material_right = Metal {attenuation: Color::new(0.8, 0.6, 0.2), fuzz: 1.0};
 
     let mut world : HittableList = HittableList::new(vec![]);
