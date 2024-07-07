@@ -1,4 +1,4 @@
-use std::cmp::min;
+use rand::Rng;
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
@@ -48,6 +48,8 @@ impl Material {
                 (scattered, *attenuation, scattered.direction().dot(record.normal) > 0.0)
             }
             Material::Dielectric {refraction_index} => {
+                let mut rng = rand::thread_rng();
+
                 let refraction = if record.front_face {1.0 / *refraction_index}
                 else { *refraction_index };
 
@@ -55,12 +57,25 @@ impl Material {
                 let cos_theta = (-unit_direction).dot(record.normal).min(1.0);
                 let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
-                let direction = if refraction * sin_theta > 1.0
-                { reflect(&unit_direction, &record.normal) }
-                else { refract(&unit_direction, &record.normal, refraction) };
+                let direction =
+                    if refraction * sin_theta > 1.0 || schlick_approximation(cos_theta, refraction) > rng.gen::<f32>()
+                    {
+                        reflect(&unit_direction, &record.normal)
+                    }
+                    else
+                    {
+                        refract(&unit_direction, &record.normal, refraction)
+                    };
 
                 (Ray::new(record.point, direction), Color::new(1.0,1.0,1.0), true)
             }
         }
     }
+}
+
+fn schlick_approximation(cosine: f32, refraction_index: f32) -> f32
+{
+    let mut r = (1.0 -refraction_index) / (1.0 + refraction_index);
+    r = r * r;
+    r + (1.0 - r) * (1.0 - cosine).powi(5)
 }
