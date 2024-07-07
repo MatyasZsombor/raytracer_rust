@@ -1,3 +1,4 @@
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
@@ -7,12 +8,13 @@ pub struct HitRecord
     pub point: Vec3,
     pub normal: Vec3,
     pub t: f32,
+    pub material: Material
 }
 
 impl HitRecord {
-    pub fn new(t: f32, point: Vec3, normal: Vec3) -> Self
+    pub fn new(t: f32, point: Vec3, normal: Vec3, material: Material) -> Self
     {
-        HitRecord {point, normal, t}
+        HitRecord {point, normal, t, material}
     }
 
     pub fn set_normal(& mut self, ray: &Ray, normal: Vec3)
@@ -29,13 +31,14 @@ pub trait Hittable
 pub struct Sphere
 {
     center: Vec3,
-    radius: f32
+    radius: f32,
+    material: Material
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32) -> Self
+    pub fn new(center: Vec3, radius: f32, material: Material) -> Self
     {
-        Sphere {center, radius}
+        Sphere {center, radius, material}
     }
 }
 
@@ -67,7 +70,7 @@ impl Hittable for Sphere {
         }
 
         let p = ray.at(root);
-        let mut hit = HitRecord::new(root, p, (p - self.center) / self.radius);
+        let mut hit = HitRecord::new(root, p, (p - self.center) / self.radius, self.material);
         hit.set_normal(ray, (hit.point - self.center) / self.radius);
         Some(hit)
     }

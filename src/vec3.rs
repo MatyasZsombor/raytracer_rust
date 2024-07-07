@@ -81,6 +81,24 @@ impl Vec3
             -random_vector
         }
     }
+
+    pub fn random_unit_vector() -> Vec3
+    {
+        let mut rng = rand::thread_rng();
+
+        let mut random_vector = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
+
+        while random_vector.length_squared() >= 1.0 {
+            random_vector = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
+        }
+        random_vector.normalize()
+    }
+
+    pub fn near_zero(&self) -> bool
+    {
+        let s = 1e-8;
+        return (self.x().abs() < s) && (self.y().abs() < s) && (self.z().abs() < s)
+    }
 }
 
 impl Display for Vec3
