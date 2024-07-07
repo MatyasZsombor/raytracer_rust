@@ -67,7 +67,7 @@ impl Vec3
         let mut rng = rand::thread_rng();
 
         let mut random_vector = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
-        while random_vector.length_squared() > 1.0 {
+        while random_vector.length_squared() >= 1.0 {
             random_vector = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
         }
        random_vector = random_vector.normalize();

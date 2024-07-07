@@ -11,6 +11,7 @@ pub struct Camera
     pub aspect_ratio: f32,
     pub image_width: i32,
     pub samples_per_pixel: i32,
+    pub max_depth: i32,
     pixel_samples_scale: f32,
     image_height: i32,
     center: Vec3,
@@ -21,7 +22,7 @@ pub struct Camera
 
 impl Camera
 {
-    pub fn new(aspect_ratio: f32, image_width: i32, center: Vec3, samples_per_pixel: i32) -> Self
+    pub fn new(aspect_ratio: f32, image_width: i32, center: Vec3, samples_per_pixel: i32, max_depth: i32) -> Self
     {
         let mut image_height = (image_width as f32 / aspect_ratio) as i32;
         image_height = if image_height < 1 { 1 } else { image_height} ;
@@ -46,6 +47,7 @@ impl Camera
             image_width,
             samples_per_pixel,
             pixel_samples_scale: 1.0 / samples_per_pixel as f32,
+            max_depth,
             image_height,
             center,
             pixel00,
@@ -70,7 +72,7 @@ impl Camera
                 for _ in 0..self.samples_per_pixel
                 {
                     let ray = self.get_ray(i, j, disk_sampling);
-                    pixel_color = pixel_color + Camera::ray_color(&ray, world);
+                    pixel_color = pixel_color + Camera::ray_color(&ray, self.max_depth, world);
                 }
                 string.push_str(&write_color(&(pixel_color * self.pixel_samples_scale)));
             }
@@ -81,14 +83,19 @@ impl Camera
         fs::write("helloworld.ppm", string).unwrap();
     }
 
-    fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color
+    fn ray_color(ray: &Ray, max_depth: i32 ,world: &dyn Hittable) -> Color
     {
-        match world.hit(ray, 0.0, f32::INFINITY)
+        if max_depth <= 0
+        {
+            return Color::new(0.0,0.0,0.0);
+        }
+
+        match world.hit(ray, 0.001, f32::INFINITY)
         {
 
             Some(hit_record) => {
-                let direction  = Vec3::random_on_hemisphere(&hit_record.normal);
-                0.5 * Self::ray_color(&Ray::new(hit_record.point, direction), world)
+                let direction  = Vec3::random_on_hemisphere(&hit_record.normal) + hit_record.normal;
+                0.5 * Self::ray_color(&Ray::new(hit_record.point, direction), max_depth - 1, world)
             }
             None => {
                 let alpha = 0.5 * (ray.direction().normalize().y() + 1.0);
