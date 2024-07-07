@@ -8,18 +8,20 @@ pub struct HitRecord
     pub point: Vec3,
     pub normal: Vec3,
     pub t: f32,
-    pub material: Material
+    pub material: Material,
+    pub front_face: bool
 }
 
 impl HitRecord {
     pub fn new(t: f32, point: Vec3, normal: Vec3, material: Material) -> Self
     {
-        HitRecord {point, normal, t, material}
+        HitRecord {point, normal, t, material, front_face: false }
     }
 
     pub fn set_normal(& mut self, ray: &Ray, normal: Vec3)
     {
-        self.normal = if ray.direction().dot(normal) < 0.0 { normal } else { -normal };
+        self.front_face = ray.direction().dot(normal) < 0.0;
+        self.normal = if  self.front_face { normal } else { -normal };
     }
 }
 
