@@ -51,8 +51,15 @@ impl Material {
                 let refraction = if record.front_face {1.0 / *refraction_index}
                 else { *refraction_index };
 
-                let refracted = refract(&ray.direction().normalize(), &record.normal, refraction);
-                (Ray::new(record.point, refracted), Color::new(1.0,1.0,1.0), true)
+                let unit_direction = ray.direction().normalize();
+                let cos_theta = (-unit_direction).dot(record.normal).min(1.0);
+                let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+                let direction = if refraction * sin_theta > 1.0
+                { reflect(&unit_direction, &record.normal) }
+                else { refract(&unit_direction, &record.normal, refraction) };
+
+                (Ray::new(record.point, direction), Color::new(1.0,1.0,1.0), true)
             }
         }
     }

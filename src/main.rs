@@ -18,7 +18,7 @@ fn main()
 
     let material_ground = Lambertian {attenuation: Color::new(0.8,0.8,0.0)};
     let material_center = Lambertian {attenuation: Color::new(0.1,0.2,0.5)};
-    let material_left = Dielectric {refraction_index : 1.50};
+    let material_left = Dielectric {refraction_index : 1.00 / 1.33};
     let material_right = Metal {attenuation: Color::new(0.8, 0.6, 0.2), fuzz: 1.0};
 
     let mut world : HittableList = HittableList::new(vec![]);
