@@ -56,8 +56,8 @@ impl Vec3
 
     pub fn cross(self, v: Vec3) -> Vec3 {
         Vec3::new(
-            self.e[2] * v.e[3] - self.e[3] * v.e[2],
-            self.e[3] * v.e[0] - self.e[0] * v.e[3],
+            self.e[1] * v.e[2] - self.e[2] * v.e[1],
+            self.e[2] * v.e[0] - self.e[0] * v.e[2],
             self.e[0] * v.e[1] - self.e[1] * v.e[0],
         )
     }
