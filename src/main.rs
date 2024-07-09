@@ -6,6 +6,7 @@ mod camera;
 mod material;
 
 use std::env;
+use rand::Rng;
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::vec3::Vec3;
@@ -14,21 +15,9 @@ use crate::material::Material::{Dielectric, Lambertian, Metal};
 
 fn main()
 {
-    let camera: Camera = Camera::new(20.0, Vec3::new(-2.0,2.0,1.0), Vec3::new(0.0,0.0,-1.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 800, 10, 50);
+    let camera: Camera = Camera::new(20.0, Vec3::new(13.0,2.0,3.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 1200, 500, 50);
 
-    let material_ground = Lambertian {attenuation: Color::new(0.8,0.7,0.0)};
-    let material_center = Lambertian {attenuation: Color::new(0.1,0.2,0.5)};
-    let material_left = Dielectric {refraction_index : 1.50};
-    let material_bubble = Dielectric {refraction_index: 1.00 / 1.50};
-    let material_right = Metal {attenuation: Color::new(0.8, 0.6, 0.2), fuzz: 1.0};
-
-    let mut world : HittableList = HittableList::new(vec![]);
-
-    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, material_ground)));
-    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.2), 0.5, material_center)));
-    world.objects.push(Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
-    world.objects.push(Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.4, material_bubble)));
-    world.objects.push(Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, material_right)));
+    let world = generate_random_scene();
 
     let args: Vec<String> = env::args().collect();
     let mut disk_sampling = false;
@@ -39,4 +28,54 @@ fn main()
     }
 
     camera.render(&world, disk_sampling);
+}
+
+fn generate_random_scene() -> HittableList
+{
+    let mut world = HittableList::new(vec![]);
+    let ground_material = Lambertian {attenuation: Color::new(0.5, 0.5, 0.5)};
+
+    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, ground_material)));
+    let mut rng = rand::thread_rng();
+
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let rnd = rng.gen::<f32>();
+            let center = Vec3::new(a as f32 + 0.9 * rng.gen::<f32>(), 0.2, b as f32 + 0.9 * rng.gen::<f32>());
+
+            if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9
+            {
+                if rnd < 0.8
+                {
+                    let albedo = Color::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0)) * Color::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
+                    let sphere_material = Lambertian {attenuation: albedo};
+                    world.objects.push(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                }
+                else if rnd < 0.95
+                {
+                    let albedo = Color::new(rng.gen_range(0.5..1.0), rng.gen_range(0.5..1.0), rng.gen_range(0.5..1.0));
+                    let fuzz = rng.gen_range(0.0..0.5);
+                    let sphere_material = Metal {attenuation: albedo, fuzz};
+                    world.objects.push(Box::new(Sphere::new(center, 0.2, sphere_material)))
+                }
+                else
+                {
+                    let sphere_material = Dielectric {refraction_index: 1.5};
+                    world.objects.push(Box::new(Sphere::new(center, 0.2, sphere_material)))
+                }
+            }
+        }
+    }
+
+    let material1 = Dielectric {refraction_index: 1.5};
+    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0,1.0,0.0), 1.0, material1)));
+
+    let material2 = Lambertian {attenuation: Color::new(0.4, 0.2, 0.1)};
+    world.objects.push(Box::new(Sphere::new(Vec3::new(-4.0, 1.0, 0.0), 1.0, material2)));
+
+    let material3 = Metal {attenuation: Color::new(0.7, 0.6, 0.5), fuzz: 0.0};
+    world.objects.push(Box::new(Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, material3)));
+
+    world
 }
