@@ -18,10 +18,10 @@ impl HitRecord {
         HitRecord { point, normal, t, material, front_face: false }
     }
 
-    pub fn set_normal(&mut self, ray: &Ray, normal: Vec3)
+    pub fn set_normal(&mut self, ray: &Ray)
     {
-        self.front_face = ray.direction.dot(normal) < 0.0;
-        self.normal = if self.front_face { normal } else { -normal };
+        self.front_face = ray.direction.dot(self.normal) < 0.0;
+        self.normal = if self.front_face { self.normal } else { -self.normal };
     }
 }
 
@@ -55,26 +55,22 @@ impl Sphere {
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let center = if self.is_moving { self.sphere_center(ray.time) } else { self.center1 };
-        let oc: Vec3 = center - ray.origin;
+        let oc = center - ray.origin;
 
         let a = ray.direction.length_squared();
         let h = ray.direction.dot(oc);
-        let c = oc.length_squared() - self.radius * self.radius;
+        let c= oc.length_squared() - self.radius * self.radius;
 
         let discriminant = h * h - a * c;
-
-        if discriminant < 0.0
-        {
-            return None;
-        }
+        if discriminant < 0.0 { return None; }
 
         let sqrt = discriminant.sqrt();
         let mut root = (h - sqrt) / a;
 
-        if root <= t_min || t_max <= root
+        if !(t_min < root && root < t_max)
         {
             root = (h + sqrt) / a;
-            if root <= t_min || t_max <= root
+            if !(t_min < root && root < t_max)
             {
                 return None;
             }
@@ -82,7 +78,7 @@ impl Hittable for Sphere {
 
         let p = ray.at(root);
         let mut hit = HitRecord::new(root, p, (p - center) / self.radius, self.material);
-        hit.set_normal(ray, (hit.point - center) / self.radius);
+        hit.set_normal(ray);
         Some(hit)
     }
 }
