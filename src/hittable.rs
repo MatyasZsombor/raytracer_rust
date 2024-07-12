@@ -90,6 +90,14 @@ impl HittableList {
     }
 }
 
+unsafe impl Sync for HittableList {
+
+}
+
+unsafe impl Send for HittableList {
+
+}
+
 impl Hittable for HittableList {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut closest = t_max;
