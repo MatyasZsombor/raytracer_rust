@@ -9,19 +9,19 @@ pub struct HitRecord
     pub normal: Vec3,
     pub t: f32,
     pub material: Material,
-    pub front_face: bool
+    pub front_face: bool,
 }
 
 impl HitRecord {
     pub fn new(t: f32, point: Vec3, normal: Vec3, material: Material) -> Self
     {
-        HitRecord {point, normal, t, material, front_face: false }
+        HitRecord { point, normal, t, material, front_face: false }
     }
 
-    pub fn set_normal(& mut self, ray: &Ray, normal: Vec3)
+    pub fn set_normal(&mut self, ray: &Ray, normal: Vec3)
     {
-        self.front_face = ray.direction().dot(normal) < 0.0;
-        self.normal = if  self.front_face { normal } else { -normal };
+        self.front_face = ray.direction.dot(normal) < 0.0;
+        self.normal = if self.front_face { normal } else { -normal };
     }
 }
 
@@ -32,24 +32,33 @@ pub trait Hittable
 
 pub struct Sphere
 {
-    center: Vec3,
+    center_vec: Vec3,
+    center1: Vec3,
     radius: f32,
-    material: Material
+    material: Material,
+    is_moving: bool,
 }
 
 impl Sphere {
     pub fn new(center: Vec3, radius: f32, material: Material) -> Self
     {
-        Sphere {center, radius, material}
+        Sphere { center_vec: center, center1: center, radius, material, is_moving: false }
+    }
+    pub fn new_moving(center1: Vec3, center2: Vec3, radius: f32, material: Material) -> Self { Sphere {center_vec: center2 - center1, center1, radius, material, is_moving: true} }
+
+    pub fn sphere_center(&self, time: f32) -> Vec3
+    {
+        return self.center1 + (time * self.center_vec);
     }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let oc: Vec3 = self.center - ray.origin();
+        let center = if self.is_moving { self.sphere_center(ray.time) } else { self.center1 };
+        let oc: Vec3 = center - ray.origin;
 
-        let a = ray.direction().length_squared();
-        let h = ray.direction().dot(oc);
+        let a = ray.direction.length_squared();
+        let h = ray.direction.dot(oc);
         let c = oc.length_squared() - self.radius * self.radius;
 
         let discriminant = h * h - a * c;
@@ -72,8 +81,8 @@ impl Hittable for Sphere {
         }
 
         let p = ray.at(root);
-        let mut hit = HitRecord::new(root, p, (p - self.center) / self.radius, self.material);
-        hit.set_normal(ray, (hit.point - self.center) / self.radius);
+        let mut hit = HitRecord::new(root, p, (p - center) / self.radius, self.material);
+        hit.set_normal(ray, (hit.point - center) / self.radius);
         Some(hit)
     }
 }
@@ -86,17 +95,13 @@ pub struct HittableList
 impl HittableList {
     pub fn new(objects: Vec<Box<dyn Hittable>>) -> Self
     {
-        HittableList {objects}
+        HittableList { objects }
     }
 }
 
-unsafe impl Sync for HittableList {
+unsafe impl Sync for HittableList {}
 
-}
-
-unsafe impl Send for HittableList {
-
-}
+unsafe impl Send for HittableList {}
 
 impl Hittable for HittableList {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
