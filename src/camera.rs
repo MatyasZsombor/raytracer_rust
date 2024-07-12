@@ -1,7 +1,8 @@
 use std::fs;
 use std::time::Instant;
 use colored::Colorize;
-use rand::Rng;
+use rand::{Rng, thread_rng};
+use rand::rngs::ThreadRng;
 use rayon::prelude::*;
 
 use crate::color::{Color, write_color};
@@ -86,11 +87,12 @@ impl Camera
 
         let pixels = (0..self.image_height).into_par_iter().map(|h| {
             (0..self.image_width).into_par_iter().map(|w| {
+                let rng = &mut thread_rng();
                 let mut pixel_color = Color::new_zero();
 
                 for _ in 0..self.samples_per_pixel
                 {
-                    let ray = self.get_ray(w, h, disk_sampling);
+                    let ray = self.get_ray(w, h, disk_sampling, rng);
                     pixel_color = pixel_color + Camera::ray_color(&ray, self.max_depth, world);
                 }
                 write_color(&(pixel_color * self.pixel_samples_scale))
@@ -120,16 +122,16 @@ impl Camera
                 Vec3::new_zero()
             }
             None => {
-                let alpha = 0.5 * (ray.direction().normalize().y() + 1.0);
+                let alpha = 0.5 * (ray.direction.normalize().y() + 1.0);
                 (1.0 - alpha) * Color::new(1.0, 1.0, 1.0) + alpha * Color::new(0.5, 0.7, 1.0)
             }
         }
     }
 
-    fn get_ray(&self, i: i32, j: i32, disk_sampling: bool) -> Ray
+    fn get_ray(&self, i: i32, j: i32, disk_sampling: bool, rng: &mut ThreadRng) -> Ray
     {
         let offset = if disk_sampling
-        { Camera::sample_disk(1.0) } else { Camera::sample_square() };
+        { Camera::sample_disk(1.0, rng) } else { Camera::sample_square(rng) };
 
         let pixel_sample = self.pixel00
             + ((i as f32 + offset.x()) * self.delta_u)
@@ -140,21 +142,19 @@ impl Camera
             {
                 self.center
             } else {
-                self.sample_defocus_disk()
+                self.sample_defocus_disk(rng)
             };
 
-        return Ray::new(ray_origin, pixel_sample - ray_origin);
+        return Ray::new(ray_origin, pixel_sample - ray_origin, rng.gen::<f32>());
     }
 
-    fn sample_square() -> Vec3
+    fn sample_square(rng: &mut ThreadRng) -> Vec3
     {
-        let mut rng = rand::thread_rng();
         Vec3::new(rng.gen::<f32>() - 0.5, rng.gen::<f32>() - 0.5, 0.0)
     }
 
-    fn sample_disk(radius: f32) -> Vec3
+    fn sample_disk(radius: f32, rng: &mut ThreadRng) -> Vec3
     {
-        let mut rng = rand::thread_rng();
         let mut p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         while p.length_squared() >= 1.0 {
             p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
@@ -162,13 +162,12 @@ impl Camera
         p * radius
     }
 
-    fn sample_defocus_disk(&self) -> Vec3
+    fn sample_defocus_disk(&self, rng: &mut ThreadRng) -> Vec3
     {
-        let mut rng = rand::thread_rng();
         let mut p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         while p.length_squared() >= 1.0 {
             p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         }
-        self.center + (p[0] * self.defocus_u) + (p[1] * self.defocus_v)
+        self.center + (p.x() * self.defocus_u) + (p.y() * self.defocus_v)
     }
 }

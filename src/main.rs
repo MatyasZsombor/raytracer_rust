@@ -15,7 +15,7 @@ use crate::material::Material::{Dielectric, Lambertian, Metal};
 
 fn main()
 {
-    let camera: Camera = Camera::new(20.0, Vec3::new(13.0,2.0,3.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 800, 500, 50);
+    let camera: Camera = Camera::new(20.0, Vec3::new(13.0,2.0,3.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 800, 100, 50);
 
     let world = generate_random_scene();
 
@@ -50,7 +50,7 @@ fn generate_random_scene() -> HittableList
                 {
                     let albedo = Color::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0)) * Color::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
                     let sphere_material = Lambertian {attenuation: albedo};
-                    world.objects.push(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                    world.objects.push(Box::new(Sphere::new_moving(center, center + Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0), 0.2, sphere_material)));
                 }
                 else if rnd < 0.95
                 {

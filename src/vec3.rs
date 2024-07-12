@@ -97,23 +97,14 @@ impl Vec3
     pub fn near_zero(&self) -> bool
     {
         let s = 1e-8;
-        return (self.x().abs() < s) && (self.y().abs() < s) && (self.z().abs() < s)
+        return (self.e[0].abs() < s) && (self.e[1].abs() < s) && (self.e[2].abs() < s)
     }
 }
 
 impl Display for Vec3
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self[0], self[1], self[2])
-    }
-}
-
-impl Index<usize> for Vec3
-{
-    type Output = f32;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.e[index]
+        write!(f, "{} {} {}", self.e[0], self.e[1], self.e[2])
     }
 }
 

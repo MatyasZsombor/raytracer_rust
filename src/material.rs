@@ -38,14 +38,14 @@ impl Material {
                     scatter_direction = record.normal;
                 }
 
-                (Ray::new(record.point, scatter_direction), *attenuation, true)
+                (Ray::new(record.point, scatter_direction, ray.time), *attenuation, true)
             }
             Material::Metal {attenuation, fuzz} => {
-                let mut reflected = reflect(&ray.direction(), &record.normal);
+                let mut reflected = reflect(&ray.direction, &record.normal);
                 reflected = reflected.normalize() + (*fuzz * Vec3::random_unit_vector());
-                let scattered = Ray::new(record.point, reflected);
+                let scattered = Ray::new(record.point, reflected, ray.time);
 
-                (scattered, *attenuation, scattered.direction().dot(record.normal) > 0.0)
+                (scattered, *attenuation, scattered.direction.dot(record.normal) > 0.0)
             }
             Material::Dielectric {refraction_index} => {
                 let mut rng = rand::thread_rng();
@@ -53,9 +53,9 @@ impl Material {
                 let refraction = if record.front_face {1.0 / *refraction_index}
                 else { *refraction_index };
 
-                let unit_direction = ray.direction().normalize();
+                let unit_direction = ray.direction.normalize();
                 let cos_theta = (-unit_direction).dot(record.normal).min(1.0);
-                let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+                let sin_theta : f32 = (1.0 - cos_theta * cos_theta).sqrt();
 
                 let direction =
                     if refraction * sin_theta > 1.0 || schlick_approximation(cos_theta, refraction) > rng.gen::<f32>()
@@ -67,7 +67,7 @@ impl Material {
                         refract(&unit_direction, &record.normal, refraction)
                     };
 
-                (Ray::new(record.point, direction), Color::new(1.0,1.0,1.0), true)
+                (Ray::new(record.point, direction, ray.time), Color::new(1.0,1.0,1.0), true)
             }
         }
     }
