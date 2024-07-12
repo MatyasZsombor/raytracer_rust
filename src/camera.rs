@@ -1,6 +1,8 @@
 use std::fs;
+use std::time::Instant;
 use colored::Colorize;
 use rand::Rng;
+use rayon::prelude::*;
 
 use crate::color::{Color, write_color};
 use crate::hittable::{Hittable, HittableList};
@@ -80,24 +82,23 @@ impl Camera
 
         string.push_str(&format!("P3\n{} {}\n{}\n", self.image_width, self.image_height, 255));
 
-        for j in 0..self.image_height {
-            println!("{} {}", "\rScan lines remaining ".red(), (self.image_height - j).to_string().red());
+        let start = Instant::now();
 
-            for i in 0..self.image_width
-            {
+        let pixels = (0..self.image_height).into_par_iter().map(|h| {
+            (0..self.image_width).into_par_iter().map(|w| {
                 let mut pixel_color = Color::new_zero();
 
                 for _ in 0..self.samples_per_pixel
                 {
-                    let ray = self.get_ray(i, j, disk_sampling);
+                    let ray = self.get_ray(w, h, disk_sampling);
                     pixel_color = pixel_color + Camera::ray_color(&ray, self.max_depth, world);
                 }
-                string.push_str(&write_color(&(pixel_color * self.pixel_samples_scale)));
-            }
+                write_color(&(pixel_color * self.pixel_samples_scale))
+            }).collect::<Vec<String>>().join("")
+        }).collect::<Vec<String>>().join("");
 
-            print!("\x1B[2J\x1B[1;1H");
-        }
-        println!("{}", "Done".green());
+        println!("{} in {:?}", "Done".green(), start.elapsed());
+        string.push_str(pixels.as_str());
         fs::write("helloworld.ppm", string).unwrap();
     }
 

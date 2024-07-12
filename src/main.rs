@@ -15,7 +15,7 @@ use crate::material::Material::{Dielectric, Lambertian, Metal};
 
 fn main()
 {
-    let camera: Camera = Camera::new(20.0, Vec3::new(13.0,2.0,3.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 1200, 500, 50);
+    let camera: Camera = Camera::new(20.0, Vec3::new(13.0,2.0,3.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 800, 500, 50);
 
     let world = generate_random_scene();
 
