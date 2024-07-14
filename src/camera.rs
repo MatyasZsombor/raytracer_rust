@@ -1,6 +1,5 @@
 use std::fs;
 use std::time::Instant;
-use colored::Colorize;
 use rand::{Rng, thread_rng};
 use rand::rngs::ThreadRng;
 use rayon::prelude::*;
@@ -99,7 +98,7 @@ impl Camera
             }).collect::<Vec<String>>().join("")
         }).collect::<Vec<String>>().join("");
 
-        println!("{} in {:?}", "Done".green(), start.elapsed());
+        println!("{} in {:?}", "Done", start.elapsed());
         string.push_str(pixels.as_str());
         fs::write("helloworld.ppm", string).unwrap();
     }
