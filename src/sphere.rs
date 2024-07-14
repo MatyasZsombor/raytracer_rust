@@ -1,7 +1,16 @@
+use std::pin::pin;
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+
+fn get_sphere_uv(point: &Vec3) -> (f32, f32)
+{
+    let theta = (-point.y()).acos();
+    let phi = (-point.z()).atan2(point.x()) + std::f32::consts::PI;
+
+    (phi / (2.0 * std::f32::consts::PI), theta / std::f32::consts::PI)
+}
 
 pub struct Sphere<T: Material>
 {
@@ -50,7 +59,8 @@ impl<T: Material> Hittable for Sphere<T> {
         }
 
         let p = ray.at(root);
-        let mut hit = HitRecord { point: p, normal: (p - center) / self.radius, t: root, material: &self.material, front_face: false};
+        let (u, v) = get_sphere_uv(&p);
+        let mut hit = HitRecord { point: p, normal: (p - center) / self.radius, t: root, material: &self.material, front_face: false, u, v};
         hit.set_normal(ray);
         Some(hit)
     }

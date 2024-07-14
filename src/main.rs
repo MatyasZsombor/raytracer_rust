@@ -5,6 +5,7 @@ mod hittable;
 mod camera;
 mod material;
 mod sphere;
+mod texture;
 
 use std::env;
 use rand::Rng;
@@ -14,6 +15,7 @@ use crate::vec3::Vec3;
 use crate::hittable::*;
 use crate::material::*;
 use crate::sphere::Sphere;
+use crate::texture::{CheckerTexture, SolidColor};
 
 fn main()
 {
@@ -35,7 +37,8 @@ fn main()
 fn generate_random_scene() -> HittableList
 {
     let mut world = HittableList::new(vec![]);
-    let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
+    let checker = CheckerTexture::new(0.32, SolidColor::new(0.2, 0.3, 0.1), SolidColor::new(0.9, 0.9, 0.9));
+    let ground_material = Lambertian::new(SolidColor::new(0.5, 0.5, 0.5));
 
     world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, ground_material)));
     let mut rng = rand::thread_rng();
@@ -50,7 +53,8 @@ fn generate_random_scene() -> HittableList
             {
                 if rnd < 0.8
                 {
-                    let albedo = Color::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) * Color::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
+                    let color = Color::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) * Color::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
+                    let albedo = SolidColor::new(color.x(), color.y(), color.z());
                     let sphere_material = Lambertian::new(albedo);
                     world.objects.push(Box::new(Sphere::new_moving(center, center + Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0),0.2, sphere_material)));
                 }
@@ -73,7 +77,7 @@ fn generate_random_scene() -> HittableList
     let material1 = Dielectric::new(1.5);
     world.objects.push(Box::new(Sphere::new(Vec3::new(0.0,1.0,0.0), 1.0, material1)));
 
-    let material2 = Lambertian::new(Color::new(0.4, 0.2, 0.1));
+    let material2 = Lambertian::new(SolidColor::new(0.4, 0.2, 0.1));
     world.objects.push(Box::new(Sphere::new(Vec3::new(-4.0, 1.0, 0.0), 1.0, material2)));
 
 

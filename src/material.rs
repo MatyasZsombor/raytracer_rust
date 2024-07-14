@@ -2,6 +2,7 @@ use rand::Rng;
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use crate::texture::Texture;
 use crate::vec3::Vec3;
 
 /*Lambertian {attenuation: Vec3 },
@@ -26,16 +27,16 @@ fn refract(uv: &Vec3, n: &Vec3, eta_over_etap: f32) -> Vec3
     r_perpendicular + r_parallel
 }
 
-pub struct Lambertian
+pub struct Lambertian<T: Texture>
 {
-    albedo: Color,
+    albedo: T,
 }
 
-impl Lambertian {
-    pub fn new(albedo: Color) -> Lambertian { Lambertian { albedo } }
+impl<T: Texture> Lambertian<T> {
+    pub fn new(albedo: T) -> Lambertian<T> { Lambertian { albedo } }
 }
 
-impl Material for Lambertian {
+impl<T: Texture> Material for Lambertian<T> {
     fn scatter(&self, ray: &Ray, record: &HitRecord) -> (Ray, Color, bool) {
         let mut scatter_direction = record.normal + Vec3::random_unit_vector();
 
@@ -44,7 +45,7 @@ impl Material for Lambertian {
             scatter_direction = record.normal;
         }
 
-        (Ray::new(record.point, scatter_direction, ray.time), self.albedo, true)
+        (Ray::new(record.point, scatter_direction, ray.time), self.albedo.value(record.u, record.v, &record.point), true)
     }
 }
 
