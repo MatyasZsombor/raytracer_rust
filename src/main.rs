@@ -6,6 +6,7 @@ mod camera;
 mod material;
 mod sphere;
 mod texture;
+mod perlin;
 
 use std::env;
 use rand::Rng;
@@ -15,7 +16,7 @@ use crate::vec3::Vec3;
 use crate::hittable::*;
 use crate::material::*;
 use crate::sphere::Sphere;
-use crate::texture::{CheckerTexture, ImageTexture, SolidColor};
+use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture, SolidColor};
 
 fn main()
 {
@@ -31,8 +32,23 @@ fn main()
         "1" => {bouncing_spheres(disk_sampling)},
         "2" => {checkered_spheres(disk_sampling)},
         "3" => {earth(disk_sampling)},
+        "4" => {perlin_spheres(disk_sampling)}
         _ => println!("Unknown scene number")
     }
+}
+
+fn perlin_spheres(disk_sampling: bool)
+{
+    let camera: Camera = Camera::new(10.0, 0.0,20.0, Vec3::new(13.0,2.0,3.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 800, 100, 50);
+    let mut world = HittableList::new(vec![]);
+
+    let perlin_texture = NoiseTexture::new(4.0);
+    let surface1 = Lambertian::new(perlin_texture.clone());
+    let surface2 = Lambertian::new(perlin_texture);
+
+    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, surface1)));
+    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0,2.0,0.0), 2.0, surface2)));
+    camera.render(&world, disk_sampling);
 }
 
 fn earth(disk_sampling: bool)
