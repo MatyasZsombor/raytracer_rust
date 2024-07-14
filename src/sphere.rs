@@ -1,4 +1,3 @@
-use std::pin::pin;
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
@@ -6,10 +5,16 @@ use crate::vec3::Vec3;
 
 fn get_sphere_uv(point: &Vec3) -> (f32, f32)
 {
-    let theta = (-point.y()).acos();
-    let phi = (-point.z()).atan2(point.x()) + std::f32::consts::PI;
+    let theta = point.x().atan2(point.z());
+    let radius = point.length();
 
-    (phi / std::f32::consts::TAU, theta / std::f32::consts::PI)
+    let phi = (point.y() / radius).acos();
+
+    let raw_u = theta / std::f32::consts::TAU;
+    let u = 1.0 - (raw_u + 0.5);
+    let v = 1.0 - phi / std::f32::consts::PI;
+
+    (u, v)
 }
 
 pub struct Sphere<T: Material>
