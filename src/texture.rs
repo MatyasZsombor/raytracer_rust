@@ -6,7 +6,7 @@ pub trait Texture: Sync
     fn value(&self, u: f32, v: f32, p: &Vec3) -> Vec3;
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct SolidColor
 {
     albedo: Vec3,
@@ -24,7 +24,7 @@ impl Texture for SolidColor
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct CheckerTexture<T: Texture, U: Texture>
 {
     inv_scale: f32,
@@ -44,7 +44,7 @@ impl<T: Texture, U: Texture> Texture for CheckerTexture<T, U>
         let y = (self.inv_scale * p.y()).floor() as i32;
         let z = (self.inv_scale * p.z()).floor() as i32;
 
-        if x + y + z % 2 == 0
+        if (x + y + z) % 2 == 0
         {
             self.even.value(u, v, p)
         }

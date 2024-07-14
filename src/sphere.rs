@@ -9,7 +9,7 @@ fn get_sphere_uv(point: &Vec3) -> (f32, f32)
     let theta = (-point.y()).acos();
     let phi = (-point.z()).atan2(point.x()) + std::f32::consts::PI;
 
-    (phi / (2.0 * std::f32::consts::PI), theta / std::f32::consts::PI)
+    (phi / std::f32::consts::TAU, theta / std::f32::consts::PI)
 }
 
 pub struct Sphere<T: Material>
