@@ -42,7 +42,7 @@ fn perlin_spheres(disk_sampling: bool)
     let camera: Camera = Camera::new(10.0, 0.0,20.0, Vec3::new(13.0,2.0,3.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),16.0 / 9.0, 800, 100, 50);
     let mut world = HittableList::new(vec![]);
 
-    let perlin_texture = NoiseTexture::new();
+    let perlin_texture = NoiseTexture::new(4.0);
     let surface1 = Lambertian::new(perlin_texture.clone());
     let surface2 = Lambertian::new(perlin_texture);
 

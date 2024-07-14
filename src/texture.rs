@@ -85,18 +85,19 @@ impl Texture for ImageTexture {
 #[derive(Clone)]
 pub struct NoiseTexture
 {
-    perlin_noise: Perlin
+    perlin_noise: Perlin,
+    scale: f32
 }
 
 impl NoiseTexture {
-    pub fn new() -> NoiseTexture {
-        NoiseTexture{perlin_noise: Perlin::new() }
+    pub fn new(scale: f32) -> NoiseTexture {
+        NoiseTexture{perlin_noise: Perlin::new(), scale }
     }
 }
 
 impl Texture for NoiseTexture
 {
     fn value(&self, _: f32, _: f32, p: &Vec3) -> Vec3 {
-        return Color::new(1.0,1.0,1.0) * self.perlin_noise.noise(p);
+        return Color::new(1.0,1.0,1.0) * self.perlin_noise.noise(&(self.scale * *p));
     }
 }
