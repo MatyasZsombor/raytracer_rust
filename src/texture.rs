@@ -98,6 +98,6 @@ impl NoiseTexture {
 impl Texture for NoiseTexture
 {
     fn value(&self, _: f32, _: f32, p: &Vec3) -> Vec3 {
-        Color::new(1.0,1.0,1.0) * self.perlin_noise.turbulence(p, 7)
+        Color::new(0.5,0.5,0.5) * (1.0 + (self.scale * p.z() + 10.0 * self.perlin_noise.turbulence(p, 7)).sin())
     }
 }
