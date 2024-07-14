@@ -1,4 +1,5 @@
 use crate::color::Color;
+use crate::perlin::Perlin;
 use crate::vec3::Vec3;
 
 pub trait Texture: Sync
@@ -78,5 +79,24 @@ impl Texture for ImageTexture {
         let j = (v * self.dimensions.1 as f32) as usize;
         let idx = 3 * i + j * 3 * self.dimensions.0 as usize;
         return Color::new(self.data[idx] as f32 / 255.0, self.data[idx + 1] as f32 / 255.0, self.data[idx + 2] as f32 / 255.0,);
+    }
+}
+
+#[derive(Clone)]
+pub struct NoiseTexture
+{
+    perlin_noise: Perlin
+}
+
+impl NoiseTexture {
+    pub fn new() -> NoiseTexture {
+        NoiseTexture{perlin_noise: Perlin::new() }
+    }
+}
+
+impl Texture for NoiseTexture
+{
+    fn value(&self, _: f32, _: f32, p: &Vec3) -> Vec3 {
+        return Color::new(1.0,1.0,1.0) * self.perlin_noise.noise(p);
     }
 }
