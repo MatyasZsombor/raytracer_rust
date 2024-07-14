@@ -1,3 +1,4 @@
+use std::ops::MulAssign;
 use rand::{Rng};
 use crate::vec3::Vec3;
 fn generate_random_vecs(n: usize) -> Vec<Vec3>
@@ -10,7 +11,7 @@ fn generate_random_vecs(n: usize) -> Vec<Vec3>
     rand_vecs
 }
 
-fn trilinear_interpolation(c: [[[Vec3; 2]; 2]; 2], u: f32, v: f32, w: f32) -> f32 {
+fn trilinear_interpolation(c: &[[[Vec3; 2]; 2]; 2], u: f32, v: f32, w: f32) -> f32 {
     let uu = u * u * (3.0 - 2.0 * u);
     let vv = v * v * (3.0 - 2.0 * v);
     let ww = w * w * (3.0 - 2.0 * w);
@@ -63,6 +64,14 @@ pub struct Perlin
     perm_z: Vec<usize>,
 }
 
+impl MulAssign<f32> for Vec3 {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.e[0] *= rhs;
+        self.e[1] *= rhs;
+        self.e[2] *= rhs
+    }
+}
+
 impl Perlin
 {
     pub fn new() -> Self
@@ -99,6 +108,21 @@ impl Perlin
             }
         }
 
-        trilinear_interpolation(c, u, v, w)
+        trilinear_interpolation(&c, u, v, w)
+    }
+
+    pub fn turbulence(&self, point: &Vec3, depth: i32) -> f32
+    {
+        let mut accum = 0.0;
+        let mut weight = 1.0;
+        let mut tmp_p = *point;
+
+        for _ in 0..depth {
+            accum += weight * self.noise(&tmp_p);
+            weight *= 0.5;
+            tmp_p *= 2.0;
+        }
+
+        f32::abs(accum)
     }
 }
