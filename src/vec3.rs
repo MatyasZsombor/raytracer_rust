@@ -5,7 +5,7 @@ use rand::Rng;
 #[derive(Clone, Copy)]
 pub struct Vec3
 {
-    e : [f32; 3],
+    pub(crate) e : [f32; 3],
 }
 
 impl Vec3
@@ -157,6 +157,14 @@ impl Div<f32> for Vec3
     type Output = Vec3;
     fn div(self, rhs: f32) -> Self::Output {
         Vec3::new(self.e[0] / rhs, self.e[1] / rhs, self.e[2] / rhs)
+    }
+}
+
+impl Div<Vec3> for f32
+{
+    type Output = Vec3;
+    fn div(self, rhs: Vec3) -> Self::Output {
+        Vec3::new(self / rhs.e[0], self / rhs.e[1], self / rhs.e[2])
     }
 }
 

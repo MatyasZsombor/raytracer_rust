@@ -1,6 +1,5 @@
 use std::fs;
 use std::time::Instant;
-use colored::Colorize;
 use rand::{Rng, thread_rng};
 use rand::rngs::ThreadRng;
 use rayon::prelude::*;
@@ -30,11 +29,8 @@ pub struct Camera
 
 impl Camera
 {
-    pub fn new(vfov: f32, from: Vec3, at: Vec3, up: Vec3, aspect_ratio: f32, image_width: i32, samples_per_pixel: i32, max_depth: i32) -> Self
+    pub fn new(focus_distance: f32, defocus_angle: f32, vfov: f32, from: Vec3, at: Vec3, up: Vec3, aspect_ratio: f32, image_width: i32, samples_per_pixel: i32, max_depth: i32) -> Self
     {
-        let focus_distance = 10.0;
-        let defocus_angle = 0.6;
-
         let mut image_height = (image_width as f32 / aspect_ratio) as i32;
         image_height = if image_height < 1 { 1 } else { image_height };
 
@@ -99,7 +95,7 @@ impl Camera
             }).collect::<Vec<String>>().join("")
         }).collect::<Vec<String>>().join("");
 
-        println!("{} in {:?}", "Done".green(), start.elapsed());
+        println!("{} in {:?}", "Done", start.elapsed());
         string.push_str(pixels.as_str());
         fs::write("helloworld.ppm", string).unwrap();
     }
