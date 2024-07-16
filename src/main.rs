@@ -42,7 +42,7 @@ fn main()
 
 fn quads(disk_sampling: bool)
 {
-    let camera: Camera = Camera::new(10.0, 0.0,80.0, Vec3::new(0.0,0.0,9.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),1.0, 400, 100, 50);
+    let camera: Camera = Camera::new(10.0, 0.0,80.0, Vec3::new(0.0,0.0,9.0), Vec3::new(0.0,0.0,0.0), Vec3::new(0.0, 1.0, 0.0),1.0, 800, 100, 50);
     let mut world = HittableList::new(vec![]);
 
     let left_red  = Lambertian::new(SolidColor::new(1.0, 0.2, 0.2));
@@ -54,7 +54,7 @@ fn quads(disk_sampling: bool)
     world.objects.push(Box::new(Quad::new(Vec3::new(-3.0, -2.0, 5.0), Vec3::new(0.0, 0.0, -4.0), Vec3::new(0.0, 4.0, 0.0), left_red)));
     world.objects.push(Box::new(Quad::new(Vec3::new(-2.0, -2.0, 0.0), Vec3::new(4.0, 0.0, 0.0), Vec3::new(0.0, 4.0, 0.0), back_green)));
     world.objects.push(Box::new(Quad::new(Vec3::new(3.0, -2.0, 1.0), Vec3::new(0.0, 0.0, 4.0), Vec3::new(0.0, 4.0, 0.0), right_blue)));
-    world.objects.push(Box::new(Quad::new(Vec3::new(-2.0, 3.0, 1.0), Vec3::new(4.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.4), upper_orange)));
+    world.objects.push(Box::new(Quad::new(Vec3::new(-2.0, 3.0, 1.0), Vec3::new(4.0, 0.0,0.0), Vec3::new(0.0,0.0,4.0), upper_orange)));
     world.objects.push(Box::new(Quad::new(Vec3::new(-2.0, -3.0, 5.0), Vec3::new(4.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -4.0), lower_teal)));
 
     camera.render(&world, disk_sampling);

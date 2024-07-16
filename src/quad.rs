@@ -19,7 +19,7 @@ impl<T: Material> Quad<T>
     pub fn new(q: Vec3, u: Vec3, v: Vec3, material: T) -> Quad<T>
     {
         let n = u.cross(v);
-        let normal = u.normalize();
+        let normal = n.normalize();
         Quad { q, u, v, w: n / n.dot(n), material, normal, d: normal.dot(q) }
     }
 }
