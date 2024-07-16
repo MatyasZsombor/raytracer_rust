@@ -36,8 +36,49 @@ fn main()
         "3" => {earth(disk_sampling)},
         "4" => {perlin_spheres(disk_sampling)}
         "5" => {quads(disk_sampling)}
+        "6" => {simple_light(disk_sampling)}
+        "7" => {cornell_box(disk_sampling)}
         _ => println!("Unknown scene number")
     }
+}
+
+fn cornell_box(disk_sampling: bool)
+{
+    let mut camera: Camera = Camera::new(10.0, 0.0, 40.0, Vec3::new(278.0, 278.0, -800.0), Vec3::new(278.0, 278.0, 0.0), Vec3::new(0.0, 1.0, 0.0), 1.0, 800, 1000, 50);
+    camera.background = Color::new_zero();
+
+    let mut world = HittableList::new(vec![]);
+
+    let red = Lambertian::new(SolidColor::new(0.65, 0.05, 0.05));
+    let white = Lambertian::new(SolidColor::new(0.73,0.73,0.73));
+    let green = Lambertian::new(SolidColor::new(0.12,0.45,0.15));
+    let light = DiffuseMaterial::new(SolidColor::new(15.0,15.0,15.0));
+
+    world.objects.push(Box::new(Quad::new(Vec3::new(555.0,0.0,0.0), Vec3::new(0.0,555.0,0.0), Vec3::new(0.0,0.0,555.0), green)));
+    world.objects.push(Box::new(Quad::new(Vec3::new(0.0,0.0,0.0), Vec3::new(0.0,555.0,0.0), Vec3::new(0.0,0.0,555.0), red)));
+    world.objects.push(Box::new(Quad::new(Vec3::new(343.0, 554.0, 332.0), Vec3::new(-130.0,0.0,0.0), Vec3::new(0.0,0.0,-105.0), light)));
+    world.objects.push(Box::new(Quad::new(Vec3::new(0.0,0.0,0.0), Vec3::new(555.0,0.0,0.0), Vec3::new(0.0,0.0,555.0), white.clone())));
+    world.objects.push(Box::new(Quad::new(Vec3::new(555.0,555.0,555.0), Vec3::new(-555.0,0.0,0.0), Vec3::new(0.0,0.0,-555.0), white.clone())));
+    world.objects.push(Box::new(Quad::new(Vec3::new(0.0,0.0,555.0), Vec3::new(555.0,0.0,0.0), Vec3::new(0.0,555.0,0.0), white)));
+
+    camera.render(&world, disk_sampling);
+}
+
+fn simple_light(disk_sampling: bool)
+{
+    let mut camera: Camera = Camera::new(10.0, 0.0, 20.0, Vec3::new(26.0, 3.0, 6.0), Vec3::new(0.0, 2.0, 0.0), Vec3::new(0.0, 1.0, 0.0), 16.0 / 9.0, 800, 10000, 50);
+    camera.background = Color::new_zero();
+
+    let mut world = HittableList::new(vec![]);
+    let perlin_texture = NoiseTexture::new(4.0);
+    let diffuse_light = DiffuseMaterial::new(SolidColor::new(4.0,4.0,4.0));
+
+    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, Lambertian::new(perlin_texture.clone()))));
+    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, 2.0, 0.0), 2.0, Lambertian::new(perlin_texture))));
+    world.objects.push(Box::new(Quad::new(Vec3::new(3.0, 1.0, -2.0), Vec3::new(2.0,0.0,0.0), Vec3::new(0.0,2.0,0.0), diffuse_light.clone())));
+    world.objects.push(Box::new(Sphere::new(Vec3::new(0.0, 7.0, 0.0), 2.0, diffuse_light)));
+
+    camera.render(&world, disk_sampling);
 }
 
 fn quads(disk_sampling: bool)

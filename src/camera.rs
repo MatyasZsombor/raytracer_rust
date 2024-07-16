@@ -17,6 +17,7 @@ pub struct Camera
     pub max_depth: i32,
     pub defocus_angle: f32,
     pub focus_distance: f32,
+    pub background: Color,
     pixel_samples_scale: f32,
     image_height: i32,
     center: Vec3,
@@ -70,6 +71,7 @@ impl Camera
             delta_v,
             defocus_u: u * defocus_radius,
             defocus_v: v * defocus_radius,
+            background: Color::new(0.70, 0.80, 1.00)
         }
     }
 
@@ -89,7 +91,7 @@ impl Camera
                 for _ in 0..self.samples_per_pixel
                 {
                     let ray = self.get_ray(w, h, disk_sampling, rng);
-                    pixel_color = pixel_color + Camera::ray_color(&ray, self.max_depth, world);
+                    pixel_color = pixel_color + self.ray_color(&ray, self.max_depth, world);
                 }
                 write_color(&(pixel_color * self.pixel_samples_scale))
             }).collect::<Vec<String>>().join("")
@@ -100,7 +102,7 @@ impl Camera
         fs::write("helloworld.ppm", string).unwrap();
     }
 
-    fn ray_color(ray: &Ray, max_depth: i32, world: &dyn Hittable) -> Color
+    fn ray_color(&self, ray: &Ray, max_depth: i32, world: &dyn Hittable) -> Color
     {
         if max_depth <= 0
         {
@@ -110,16 +112,18 @@ impl Camera
         match world.hit(ray, 0.001, f32::INFINITY)
         {
             Some(hit_record) => {
-                let result = hit_record.material.scatter(&ray, &hit_record);
+                let color_from_emission = hit_record.material.emitted(hit_record.u, hit_record.u, &hit_record.point);
+                let result = hit_record.material.scatter(ray, &hit_record);
 
-                if result.2 {
-                    return result.1 * Self::ray_color(&result.0, max_depth - 1, world);
+                if result.is_none()
+                {
+                    return color_from_emission;
                 }
-                Vec3::new_zero()
+                let result = result.unwrap();
+                color_from_emission + result.1 * self.ray_color(&result.0,max_depth - 1, world)
             }
             None => {
-                let alpha = 0.5 * (ray.direction.normalize().y() + 1.0);
-                (1.0 - alpha) * Color::new(1.0, 1.0, 1.0) + alpha * Color::new(0.5, 0.7, 1.0)
+                return self.background;
             }
         }
     }
