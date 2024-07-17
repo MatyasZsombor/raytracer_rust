@@ -1,4 +1,5 @@
 use crate::material::Material;
+use crate::quad::Quad;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
@@ -59,4 +60,25 @@ impl Hittable for HittableList {
 
         res
     }
+}
+
+pub fn new_box<T: Material + Clone + 'static>(a: &Vec3, b: &Vec3, mat: &T) -> HittableList
+{
+    let mut sides = HittableList::new(vec![]);
+
+    let min = Vec3::new(a.x().min(b.x()), a.y().min(b.y()), a.z().min(b.z()));
+    let max = Vec3::new(a.x().max(b.x()), a.y().max(b.y()), a.z().max(b.z()));
+
+    let dx = Vec3::new(max.x() - min.x(), 0.0,0.0);
+    let dy = Vec3::new(0.0, max.y() - min.y(), 0.0);
+    let dz = Vec3::new(0.0,0.0, max.z() - min.z());
+
+    sides.objects.push(Box::new(Quad::new(Vec3::new(min.x(), min.y(), max.z()), dx, dy, mat.clone())));
+    sides.objects.push(Box::new(Quad::new(Vec3::new(max.x(), min.y(), max.z()), -dz, dy, mat.clone())));
+    sides.objects.push(Box::new(Quad::new(Vec3::new(max.x(), min.y(), min.z()), -dx, dy, mat.clone())));
+    sides.objects.push(Box::new(Quad::new(Vec3::new(min.x(), min.y(), min.z()), dz, dy, mat.clone())));
+    sides.objects.push(Box::new(Quad::new(Vec3::new(min.x(), max.y(), max.z()), dx, -dz, mat.clone())));
+    sides.objects.push(Box::new(Quad::new(Vec3::new(min.x(), min.y(), min.z()), dx, dz, mat.clone())));
+
+    sides
 }

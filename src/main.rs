@@ -59,14 +59,17 @@ fn cornell_box(disk_sampling: bool)
     world.objects.push(Box::new(Quad::new(Vec3::new(343.0, 554.0, 332.0), Vec3::new(-130.0,0.0,0.0), Vec3::new(0.0,0.0,-105.0), light)));
     world.objects.push(Box::new(Quad::new(Vec3::new(0.0,0.0,0.0), Vec3::new(555.0,0.0,0.0), Vec3::new(0.0,0.0,555.0), white.clone())));
     world.objects.push(Box::new(Quad::new(Vec3::new(555.0,555.0,555.0), Vec3::new(-555.0,0.0,0.0), Vec3::new(0.0,0.0,-555.0), white.clone())));
-    world.objects.push(Box::new(Quad::new(Vec3::new(0.0,0.0,555.0), Vec3::new(555.0,0.0,0.0), Vec3::new(0.0,555.0,0.0), white)));
+    world.objects.push(Box::new(Quad::new(Vec3::new(0.0,0.0,555.0), Vec3::new(555.0,0.0,0.0), Vec3::new(0.0,555.0,0.0), white.clone())));
+
+    world.objects.push(Box::new(new_box(&Vec3::new(130.0, 0.0, 65.0), &Vec3::new(295.0, 165.0, 230.0), &white)));
+    world.objects.push(Box::new(new_box(&Vec3::new(265.0,0.0,295.0), &Vec3::new(430.0, 330.0,460.0), &white)));
 
     camera.render(&world, disk_sampling);
 }
 
 fn simple_light(disk_sampling: bool)
 {
-    let mut camera: Camera = Camera::new(10.0, 0.0, 20.0, Vec3::new(26.0, 3.0, 6.0), Vec3::new(0.0, 2.0, 0.0), Vec3::new(0.0, 1.0, 0.0), 16.0 / 9.0, 800, 10000, 50);
+    let mut camera: Camera = Camera::new(10.0, 0.0, 20.0, Vec3::new(26.0, 3.0, 6.0), Vec3::new(0.0, 2.0, 0.0), Vec3::new(0.0, 1.0, 0.0), 16.0 / 9.0, 800, 1000, 50);
     camera.background = Color::new_zero();
 
     let mut world = HittableList::new(vec![]);
