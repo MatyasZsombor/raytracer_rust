@@ -35,7 +35,7 @@ raytracer <scene-number> <disk-sampling>
 cargo run --release list
 raytracer list
 ```
-
+---
 ### 🛠️ Things to Implement in the Future
 
 - **Volume Effects**
@@ -43,6 +43,7 @@ raytracer list
 - **Instances**
 - **GPU Support**
 
+---
 ### 📚 Resources
 - **Raytracing In A Weekend Series:** https://raytracing.github.io
 - **The Ray Tracer Challenge:** http://raytracerchallenge.com
