@@ -18,6 +18,7 @@ A **simple multithreaded raytracer** implemented in Rust, featuring:
 To get started, either **clone the repository** or **download the release** for your platform.
 
 ### Basic Commands
+#### The final image will be written to final_image.ppm. Note: Some scenes can take 2-3 Minutes to render. 
 #### Run without Disk Sampling:
 ```bash
 cargo run --release <scene-number>
